@@ -1,5 +1,5 @@
-github.com/bodgit/plumbing v0.0.0-20200416225550-8a3ceab39dc5 h1:wlC6ooL2bI5HybCbP7fN3GbAe66Or4O1gea6dM2Piko=
-github.com/bodgit/plumbing v0.0.0-20200416225550-8a3ceab39dc5/go.mod h1:HvY/F2JCfHpm7AxnSMjhRl8QGDCmEvke8F9e3vbLRhY=
+github.com/bodgit/plumbing v1.1.0 h1:lesbixvHgSBQFNMsrjdPNsm+EBk4vFFhxWl0+90vDY0=
+github.com/bodgit/plumbing v1.1.0/go.mod h1:HvY/F2JCfHpm7AxnSMjhRl8QGDCmEvke8F9e3vbLRhY=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/gabriel-vasile/mimetype v1.1.0 h1:+ahX+MvQPFve4kO9Qjjxf3j49i0ACdV236kJlOCRAnU=
