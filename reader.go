@@ -9,6 +9,7 @@ import (
 	"sort"
 
 	"github.com/bodgit/plumbing"
+	"github.com/bodgit/sevenzip"
 	"github.com/gabriel-vasile/mimetype"
 )
 
@@ -57,6 +58,8 @@ func NewReader(path string) (Reader, error) {
 	}
 
 	switch mime.Extension() {
+	case ".7z":
+		return NewSevenZipReader(path)
 	case ".zip":
 		return NewZipReader(path)
 	}
@@ -370,4 +373,119 @@ func (r *ZipReader) Size(filename string) (uint64, error) {
 		return 0, errFileNotFound
 	}
 	return file.UncompressedSize64, nil
+}
+
+// SevenZipReader reads a 7zip archive and provides access to any regular
+// files contained within. Hidden files, directories and any files not in
+// the top level are inaccessible
+type SevenZipReader struct {
+	file   *os.File
+	reader *sevenzip.Reader
+	files  map[string]*sevenzip.File
+	rx     plumbing.WriteCounter
+}
+
+// NewSevenZipReader returns a new SevenZipReader for the passed 7zip archive
+func NewSevenZipReader(filename string) (r *SevenZipReader, err error) {
+	r = &SevenZipReader{
+		files: make(map[string]*sevenzip.File),
+	}
+
+	r.file, err = os.Open(filename)
+	if err != nil {
+		return
+	}
+	defer func() {
+		if err != nil {
+			r.file.Close()
+		}
+	}()
+
+	var info os.FileInfo
+	info, err = r.file.Stat()
+	if err != nil {
+		return
+	}
+
+	r.reader, err = sevenzip.NewReader(plumbing.TeeReaderAt(r.file, &r.rx), info.Size())
+	if err != nil {
+		return
+	}
+
+	for _, file := range r.reader.File {
+		if !file.Mode().IsRegular() || file.Name[0] == '.' || filepath.Dir(file.Name) != "." {
+			continue
+		}
+		r.files[file.Name] = file
+	}
+
+	return
+}
+
+// Checksum computes the checksum for the passed file. CRC values for files
+// that don't have special requirements use the value from the central
+// directory
+func (r *SevenZipReader) Checksum(filename string, checksum Checksum) ([]byte, error) {
+	file, ok := r.files[filename]
+	if !ok {
+		return nil, errFileNotFound
+	}
+
+	if checksum == CRC32 && !needsDirectChecksum(filename) {
+		c := file.CRC32
+		return []byte{byte(0xff & (c >> 24)), byte(0xff & (c >> 16)), byte(0xff & (c >> 8)), byte(c)}, nil
+	}
+
+	reader, err := r.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer reader.Close()
+
+	return checksumFunction(filename)(reader, checksum)
+}
+
+// Close closes access to the underlying file. Any other methods are not
+// guaranteed to work after this has been called
+func (r *SevenZipReader) Close() error {
+	return r.file.Close()
+}
+
+// Files returns all files accessible by the implementation. The files are
+// sorted for consistency
+func (r *SevenZipReader) Files() []string {
+	files := []string{}
+	for f := range r.files {
+		files = append(files, f)
+	}
+	sort.Strings(files)
+	return files
+}
+
+// Name returns the full path to the underlying file
+func (r *SevenZipReader) Name() string {
+	return r.file.Name()
+}
+
+// Open returns an io.ReadCloser for any file listed by the Files method
+func (r *SevenZipReader) Open(filename string) (io.ReadCloser, error) {
+	file, ok := r.files[filename]
+	if !ok {
+		return nil, errFileNotFound
+	}
+	return file.Open()
+}
+
+// Rx returns the number of bytes read by the implementation
+func (r *SevenZipReader) Rx() uint64 {
+	return r.rx.Count()
+}
+
+// Size returns the size of any file listed by the Files method
+func (r *SevenZipReader) Size(filename string) (uint64, error) {
+	file, ok := r.files[filename]
+	if !ok {
+		return 0, errFileNotFound
+	}
+	return file.UncompressedSize, nil
 }
