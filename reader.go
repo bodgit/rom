@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"sort"
 
 	"github.com/bodgit/plumbing"
 	"github.com/bodgit/sevenzip"
@@ -20,8 +19,7 @@ type Reader interface {
 	// Close closes access to the underlying file. Any other methods
 	// are not guaranteed to work after this has been called
 	Close() error
-	// Files returns all files accessible by the implementation. The
-	// files are sorted for consistency
+	// Files returns all files accessible by the implementation.
 	Files() []string
 	// Name returns the full path to the underlying file
 	Name() string
@@ -114,8 +112,7 @@ func (r *FileReader) Close() error {
 	return nil
 }
 
-// Files returns all files accessible by the implementation. The files are
-// sorted for consistency
+// Files returns all files accessible by the implementation.
 func (r *FileReader) Files() []string {
 	return []string{r.filename}
 }
@@ -219,14 +216,12 @@ func (r *DirectoryReader) Close() error {
 	return nil
 }
 
-// Files returns all files accessible by the implementation. The files are
-// sorted for consistency
+// Files returns all files accessible by the implementation.
 func (r *DirectoryReader) Files() []string {
 	files := []string{}
 	for f := range r.files {
 		files = append(files, f)
 	}
-	sort.Strings(files)
 	return files
 }
 
@@ -336,14 +331,12 @@ func (r *ZipReader) Close() error {
 	return r.file.Close()
 }
 
-// Files returns all files accessible by the implementation. The files are
-// sorted for consistency
+// Files returns all files accessible by the implementation.
 func (r *ZipReader) Files() []string {
 	files := []string{}
 	for f := range r.files {
 		files = append(files, f)
 	}
-	sort.Strings(files)
 	return files
 }
 
@@ -451,14 +444,12 @@ func (r *SevenZipReader) Close() error {
 	return r.file.Close()
 }
 
-// Files returns all files accessible by the implementation. The files are
-// sorted for consistency
+// Files returns all files accessible by the implementation.
 func (r *SevenZipReader) Files() []string {
 	files := []string{}
 	for f := range r.files {
 		files = append(files, f)
 	}
-	sort.Strings(files)
 	return files
 }
 
