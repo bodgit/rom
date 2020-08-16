@@ -1,7 +1,7 @@
 github.com/bodgit/plumbing v1.1.0 h1:lesbixvHgSBQFNMsrjdPNsm+EBk4vFFhxWl0+90vDY0=
 github.com/bodgit/plumbing v1.1.0/go.mod h1:HvY/F2JCfHpm7AxnSMjhRl8QGDCmEvke8F9e3vbLRhY=
-github.com/bodgit/sevenzip v0.0.0-20200813155505-bfe01ba75df4 h1:B1+9TvX3Nmp/LJqLX3zTdppJ+SH6AqADOyOCXCf7hnk=
-github.com/bodgit/sevenzip v0.0.0-20200813155505-bfe01ba75df4/go.mod h1:ObCn13RsiDEc/47HyS0QxjFAz4fYBrgsK9MJmWRoQ1k=
+github.com/bodgit/sevenzip v1.0.0 h1:aq2pXZfgfmHMh/NcRxuXaVhywOx1FSQW7amTogZ77gU=
+github.com/bodgit/sevenzip v1.0.0/go.mod h1:ObCn13RsiDEc/47HyS0QxjFAz4fYBrgsK9MJmWRoQ1k=
 github.com/bodgit/windows v1.0.0 h1:rLQ/XjsleZvx4fR1tB/UxQrK+SJ2OFHzfPjLWWOhDIA=
 github.com/bodgit/windows v1.0.0/go.mod h1:a6JLwrB4KrTR5hBpp8FI9/9W9jJfeQ2h4XDXU74ZCdM=
 github.com/connesc/cipherio v0.2.1 h1:FGtpTPMbKNNWByNrr9aEBtaJtXjqOzkIXNYJp6OEycw=
