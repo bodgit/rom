@@ -1,7 +1,7 @@
 github.com/bodgit/plumbing v1.1.0 h1:lesbixvHgSBQFNMsrjdPNsm+EBk4vFFhxWl0+90vDY0=
 github.com/bodgit/plumbing v1.1.0/go.mod h1:HvY/F2JCfHpm7AxnSMjhRl8QGDCmEvke8F9e3vbLRhY=
-github.com/bodgit/sevenzip v0.0.0-20200801105942-0f79a82737ca h1:Kqf8c9+GDeFintX6Jh+ZJUEhmrfwWMmDmtUMCt1vc0M=
-github.com/bodgit/sevenzip v0.0.0-20200801105942-0f79a82737ca/go.mod h1:ObCn13RsiDEc/47HyS0QxjFAz4fYBrgsK9MJmWRoQ1k=
+github.com/bodgit/sevenzip v0.0.0-20200813155505-bfe01ba75df4 h1:B1+9TvX3Nmp/LJqLX3zTdppJ+SH6AqADOyOCXCf7hnk=
+github.com/bodgit/sevenzip v0.0.0-20200813155505-bfe01ba75df4/go.mod h1:ObCn13RsiDEc/47HyS0QxjFAz4fYBrgsK9MJmWRoQ1k=
 github.com/bodgit/windows v1.0.0 h1:rLQ/XjsleZvx4fR1tB/UxQrK+SJ2OFHzfPjLWWOhDIA=
 github.com/bodgit/windows v1.0.0/go.mod h1:a6JLwrB4KrTR5hBpp8FI9/9W9jJfeQ2h4XDXU74ZCdM=
 github.com/connesc/cipherio v0.2.1 h1:FGtpTPMbKNNWByNrr9aEBtaJtXjqOzkIXNYJp6OEycw=
@@ -12,6 +12,7 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/gabriel-vasile/mimetype v1.1.0 h1:+ahX+MvQPFve4kO9Qjjxf3j49i0ACdV236kJlOCRAnU=
 github.com/gabriel-vasile/mimetype v1.1.0/go.mod h1:6CDPel/o/3/s4+bp6kIbsWATq8pmgOisOPG40CJa6To=
+github.com/golang/mock v1.4.3 h1:GV+pQPG/EUUbkh47niozDcADz6go/dUwhVzdUQHIVRw=
 github.com/golang/mock v1.4.3/go.mod h1:UOMv5ysSaYNkG+OFQykRIcU/QvvxJf3p21QfJ2Bt3cw=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
