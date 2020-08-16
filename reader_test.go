@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"sort"
 	"syscall"
 	"testing"
 
@@ -63,7 +64,9 @@ func TestNewReader(t *testing.T) {
 			if err == nil {
 				assert.Equal(t, table.reader, fmt.Sprintf("%T", r))
 				assert.Equal(t, table.path, r.Name())
-				assert.Equal(t, table.files, r.Files())
+				files := r.Files()
+				sort.Strings(files)
+				assert.Equal(t, table.files, files)
 
 				_, err = r.Size("nonexistent")
 				assert.Equal(t, errFileNotFound, err)
