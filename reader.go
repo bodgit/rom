@@ -3,9 +3,12 @@ package rom
 import (
 	"archive/zip"
 	"errors"
+	"fmt"
+	"hash/crc32"
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/bodgit/plumbing"
 	"github.com/bodgit/sevenzip"
@@ -32,10 +35,21 @@ type Reader interface {
 	Size(string) (uint64, error)
 }
 
+// Validator is the interface optionally implemented by a ROM reader if it can
+// validate its integrity somehow
+type Validator interface {
+	// Valid returns if the underlying file or container is considered
+	// correct
+	Valid() bool
+}
+
 var (
 	errNotFile      = errors.New("not a file")
 	errNotDirectory = errors.New("not a directory")
 	errFileNotFound = errors.New("file not found")
+	// ErrNotTorrentZip is returned if a zip file does not have the
+	// correct archive comment
+	ErrNotTorrentZip = errors.New("not a torrent zip")
 )
 
 // NewReader uses heuristics to work out the type of file passed and uses
@@ -59,6 +73,10 @@ func NewReader(path string) (Reader, error) {
 	case ".7z":
 		return NewSevenZipReader(path)
 	case ".zip":
+		r, err := NewTorrentZipReader(path)
+		if err != ErrNotTorrentZip {
+			return r, err
+		}
 		return NewZipReader(path)
 	}
 
@@ -366,6 +384,62 @@ func (r *ZipReader) Size(filename string) (uint64, error) {
 		return 0, errFileNotFound
 	}
 	return file.UncompressedSize64, nil
+}
+
+// TorrentZipReader reads a zip archive and provides access to any regular files
+// contained within. Hidden files, directories and any files not in the
+// top level are inaccessible
+type TorrentZipReader struct {
+	*ZipReader
+	valid bool
+}
+
+const (
+	commentPrefix              = "TORRENTZIPPED-"
+	localFileHeaderLength      = 30
+	centralFileDirectoryLength = 46
+)
+
+// NewTorrentZipReader returns a new TorrentZipReader for the passed zip
+// archive. It extends NewZipReader to check that the zip archive has the
+// correctly formatted comment and validates that the CRC of the central
+// directory matches the comment value
+func NewTorrentZipReader(filename string) (r *TorrentZipReader, err error) {
+	r = new(TorrentZipReader)
+
+	r.ZipReader, err = NewZipReader(filename)
+	if err != nil {
+		return
+	}
+	reader := r.ZipReader.reader
+
+	if !strings.HasPrefix(reader.Comment, commentPrefix) {
+		err = ErrNotTorrentZip
+		return
+	}
+
+	// Work out the start and length of the central directory
+	socd, eocd := int64(0), int64(0)
+	for _, file := range reader.File {
+		socd += int64(localFileHeaderLength + len(file.Name))
+		socd += int64(file.CompressedSize64)
+		eocd += int64(centralFileDirectoryLength + len(file.Name))
+	}
+
+	h := crc32.NewIEEE()
+	sr := io.NewSectionReader(plumbing.TeeReaderAt(r.ZipReader.file, &r.ZipReader.rx), socd, eocd)
+	if _, err = io.Copy(h, sr); err != nil {
+		return
+	}
+	r.valid = strings.TrimPrefix(reader.Comment, commentPrefix) == fmt.Sprintf("%X", h.Sum(nil))
+
+	return
+}
+
+// Valid confirms the checksum of the central directory in the zip archive
+// matches the value in the archive comment
+func (r *TorrentZipReader) Valid() bool {
+	return r.valid
 }
 
 // SevenZipReader reads a 7zip archive and provides access to any regular

@@ -39,6 +39,12 @@ func TestNewReader(t *testing.T) {
 			"*rom.ZipReader",
 			[]string{"test.bin", "test.nes"},
 		},
+		"torrentzip": {
+			filepath.Join("testdata", "torrent.zip"),
+			nil,
+			"*rom.TorrentZipReader",
+			[]string{"test.bin", "test.nes"},
+		},
 		"7z": {
 			filepath.Join("testdata", "test.7z"),
 			nil,
@@ -100,6 +106,10 @@ func TestNewReader(t *testing.T) {
 				}
 				assert.Equal(t, []byte{0xca, 0xc6, 0x80, 0x38, 0xd6, 0x93, 0xcb, 0x64, 0x5b, 0x85, 0xa9, 0x99, 0x05, 0x20, 0xbc, 0x74, 0xdd, 0x96, 0x53, 0xb7}, b.Bytes())
 				assert.Equal(t, nil, reader.Close())
+
+				if v, ok := r.(Validator); ok {
+					assert.Equal(t, true, v.Valid())
+				}
 
 				assert.Equal(t, nil, r.Close())
 				assert.Greater(t, r.Rx(), uint64(0))
