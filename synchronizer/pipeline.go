@@ -256,7 +256,7 @@ func (s *Synchronizer) create(game dat.Game, dir string, db *DB) error {
 	writer.Close()
 	atomic.AddUint64(&s.tx, writer.Tx())
 
-	reader, err := rom.NewZipReader(filepath.Join(dir, gameFilename(game)))
+	reader, err := rom.NewTorrentZipReader(filepath.Join(dir, gameFilename(game)))
 	if err != nil {
 		return err
 	}
@@ -276,17 +276,30 @@ func (s *Synchronizer) modify(game dat.Game, dir string, db *DB) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	reader, err := rom.NewZipReader(filepath.Join(dir, gameFilename(game)))
-	if err != nil {
-		return err
+	var reader rom.Reader
+	var err error
+
+	rewrite := false
+
+	if reader, err = rom.NewTorrentZipReader(filepath.Join(dir, gameFilename(game))); err != nil {
+		if err != rom.ErrNotTorrentZip {
+			return err
+		}
+
+		if reader, err = rom.NewZipReader(filepath.Join(dir, gameFilename(game))); err != nil {
+			return err
+		}
 	}
 	defer reader.Close()
+
+	if v, ok := reader.(rom.Validator); !ok || !v.Valid() {
+		rewrite = true
+	}
 
 	sources := make(map[string][]source, len(game.ROM))
 	files := reader.Files()
 	sort.Strings(files)
 
-	var rewrite bool
 	for _, r := range game.ROM {
 		if i := sort.SearchStrings(files, r.Name); i < len(files) && files[i] == r.Name {
 			c, err := reader.Checksum(r.Name, s.checksum)
@@ -312,15 +325,18 @@ func (s *Synchronizer) modify(game dat.Game, dir string, db *DB) error {
 		return nil
 	}
 
-	if len(sources) == 0 {
+	switch len(sources) {
+	case 0:
 		s.logger.Println("Deleting", reader.Name())
 		if s.dryRun {
 			return nil
 		}
 		return os.RemoveAll(reader.Name())
+	case len(files):
+		s.logger.Println("Rebuilding", reader.Name())
+	default:
+		s.logger.Println("Modifying", reader.Name())
 	}
-
-	s.logger.Println("Modifying", reader.Name())
 
 	if s.dryRun {
 		return nil
@@ -352,7 +368,7 @@ func (s *Synchronizer) modify(game dat.Game, dir string, db *DB) error {
 
 	db.invalidate(reader.Name())
 
-	reader, err = rom.NewZipReader(filepath.Join(dir, gameFilename(game)))
+	reader, err = rom.NewTorrentZipReader(filepath.Join(dir, gameFilename(game)))
 	if err != nil {
 		return err
 	}
