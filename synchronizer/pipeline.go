@@ -297,31 +297,26 @@ func (s *Synchronizer) modify(game dat.Game, dir string, db *DB) error {
 	}
 
 	sources := make(map[string][]source, len(game.ROM))
-	files := reader.Files()
-	sort.Strings(files)
 
+rom:
 	for _, r := range game.ROM {
-		if i := sort.SearchStrings(files, r.Name); i < len(files) && files[i] == r.Name {
-			c, err := reader.Checksum(r.Name, s.checksum)
-			if err != nil {
-				return err
+		if srcs := db.find(romChecksum(r, s.checksum)); srcs != nil && len(srcs) > 0 {
+			for _, src := range srcs {
+				if src.Name == reader.Name() && src.File == r.Name {
+					sources[r.Name] = []source{{reader.Name(), r.Name}}
+					continue rom
+				}
 			}
-			if romChecksum(r, s.checksum).Value == checksumToString(c) {
-				sources[r.Name] = []source{{reader.Name(), r.Name}}
-				continue
-			}
-		}
 
-		if s := db.find(romChecksum(r, s.checksum)); s != nil && len(s) > 0 {
 			rewrite = true
-			sources[r.Name] = s
+			sources[r.Name] = srcs
 		}
 	}
 
 	reader.Close()
 	atomic.AddUint64(&s.rx, reader.Rx())
 
-	if !rewrite && len(sources) == len(files) {
+	if !rewrite && len(sources) == len(reader.Files()) {
 		return nil
 	}
 
@@ -332,7 +327,7 @@ func (s *Synchronizer) modify(game dat.Game, dir string, db *DB) error {
 			return nil
 		}
 		return os.RemoveAll(reader.Name())
-	case len(files):
+	case len(reader.Files()):
 		s.logger.Println("Rebuilding", reader.Name())
 	default:
 		s.logger.Println("Modifying", reader.Name())
