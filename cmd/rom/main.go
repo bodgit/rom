@@ -85,6 +85,8 @@ func sync(c *cli.Context) error {
 
 	logger.Println("Read", s.Rx(), "bytes in", elapsed)
 
+	s.Reset()
+
 	b, err := ioutil.ReadAll(os.Stdin)
 	if err != nil {
 		log.Fatal(err)

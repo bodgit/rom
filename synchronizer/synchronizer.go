@@ -214,6 +214,12 @@ func (s *Synchronizer) Delete(dir string, datfile *dat.File) error {
 	return nil
 }
 
+// Reset zeroes the bytes read & written counters
+func (s *Synchronizer) Reset() {
+	atomic.StoreUint64(&s.rx, 0)
+	atomic.StoreUint64(&s.tx, 0)
+}
+
 // Rx returns how many bytes have been read by s
 func (s *Synchronizer) Rx() uint64 {
 	return atomic.LoadUint64(&s.rx)
