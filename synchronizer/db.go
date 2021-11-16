@@ -28,7 +28,7 @@ func (db *DB) scan(reader rom.Reader, t rom.Checksum) error {
 	defer db.mutex.Unlock()
 
 	for _, file := range reader.Files() {
-		size, err := reader.Size(file)
+		size, header, err := reader.Size(file)
 		if err != nil {
 			return err
 		}
@@ -41,7 +41,7 @@ func (db *DB) scan(reader rom.Reader, t rom.Checksum) error {
 		checksum := checksum{
 			Type:  t,
 			Value: checksumToString(c),
-			Size:  size,
+			Size:  size - header,
 		}
 
 		db.checksums[checksum] = append(db.checksums[checksum], source{reader.Name(), file})

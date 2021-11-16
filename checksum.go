@@ -1,7 +1,6 @@
 package rom
 
 import (
-	"bytes"
 	"crypto/md5"
 	"crypto/sha1"
 	"hash/crc32"
@@ -32,14 +31,18 @@ func checksum(r io.Reader) ([][]byte, error) {
 }
 
 var extensionToChecksum = map[string]func(io.Reader) ([][]byte, error){
-	".nes": func(r io.Reader) ([][]byte, error) {
-		b := new(bytes.Buffer)
-		if _, err := io.CopyN(b, r, 16); err != nil {
+	".lnx": func(r io.Reader) ([][]byte, error) {
+		var err error
+		if r, _, err = lynxReader(r); err != nil {
 			return nil, err
 		}
 
-		if bytes.Compare(b.Bytes()[0:4], []byte{'N', 'E', 'S', 0x1a}) != 0 {
-			r = io.MultiReader(b, r)
+		return checksum(r)
+	},
+	".nes": func(r io.Reader) ([][]byte, error) {
+		var err error
+		if r, _, err = nesReader(r); err != nil {
+			return nil, err
 		}
 
 		return checksum(r)

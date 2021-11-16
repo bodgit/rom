@@ -17,7 +17,7 @@ import (
 
 // Reader is the interface implemented by all ROM readers
 type Reader interface {
-	// Checksum computes the checksum for the passed file
+	// Checksum computes the checksum for the passed file, it will not include any header that might be present
 	Checksum(string, Checksum) ([]byte, error)
 	// Close closes access to the underlying file. Any other methods
 	// are not guaranteed to work after this has been called
@@ -31,8 +31,8 @@ type Reader interface {
 	Open(string) (io.ReadCloser, error)
 	// Rx returns the number of bytes read by the implementation
 	Rx() uint64
-	// Size returns the size of any file listed by the Files method
-	Size(string) (uint64, error)
+	// Size returns the size of any file listed by the Files method and the size of any header that is present
+	Size(string) (uint64, uint64, error)
 }
 
 // Validator is the interface optionally implemented by a ROM reader if it can
@@ -172,11 +172,27 @@ func (r *FileReader) Rx() uint64 {
 }
 
 // Size returns the size of any file listed by the Files method
-func (r *FileReader) Size(filename string) (uint64, error) {
+func (r *FileReader) Size(filename string) (uint64, uint64, error) {
 	if filename != r.filename {
-		return 0, errFileNotFound
+		return 0, 0, errFileNotFound
 	}
-	return r.size, nil
+
+	if !hasHeader(filename) {
+		return r.size, 0, nil
+	}
+
+	reader, err := r.Open(filename)
+	if err != nil {
+		return 0, 0, err
+	}
+	defer reader.Close()
+
+	hs, err := headerSizeFunction(filename)(reader)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return r.size, hs, nil
 }
 
 // DirectoryReader reads a directory and provides access to any regular
@@ -294,11 +310,28 @@ func (r *DirectoryReader) Rx() uint64 {
 }
 
 // Size returns the size of any file listed by the Files method
-func (r *DirectoryReader) Size(filename string) (uint64, error) {
-	if size, ok := r.files[filename]; ok {
-		return size, nil
+func (r *DirectoryReader) Size(filename string) (uint64, uint64, error) {
+	size, ok := r.files[filename]
+	if !ok {
+		return 0, 0, errFileNotFound
 	}
-	return 0, errFileNotFound
+
+	if !hasHeader(filename) {
+		return size, 0, nil
+	}
+
+	reader, err := r.Open(filename)
+	if err != nil {
+		return 0, 0, err
+	}
+	defer reader.Close()
+
+	hs, err := headerSizeFunction(filename)(reader)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return size, hs, nil
 }
 
 // ZipReader reads a zip archive and provides access to any regular files
@@ -421,12 +454,28 @@ func (r *ZipReader) Rx() uint64 {
 }
 
 // Size returns the size of any file listed by the Files method
-func (r *ZipReader) Size(filename string) (uint64, error) {
+func (r *ZipReader) Size(filename string) (uint64, uint64, error) {
 	file, ok := r.files[filename]
 	if !ok {
-		return 0, errFileNotFound
+		return 0, 0, errFileNotFound
 	}
-	return file.UncompressedSize64, nil
+
+	if !hasHeader(filename) {
+		return file.UncompressedSize64, 0, nil
+	}
+
+	reader, err := r.Open(filename)
+	if err != nil {
+		return 0, 0, err
+	}
+	defer reader.Close()
+
+	hs, err := headerSizeFunction(filename)(reader)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return file.UncompressedSize64, hs, nil
 }
 
 // TorrentZipReader reads a zip archive and provides access to any regular files
@@ -605,10 +654,26 @@ func (r *SevenZipReader) Rx() uint64 {
 }
 
 // Size returns the size of any file listed by the Files method
-func (r *SevenZipReader) Size(filename string) (uint64, error) {
+func (r *SevenZipReader) Size(filename string) (uint64, uint64, error) {
 	file, ok := r.files[filename]
 	if !ok {
-		return 0, errFileNotFound
+		return 0, 0, errFileNotFound
 	}
-	return file.UncompressedSize, nil
+
+	if !hasHeader(filename) {
+		return file.UncompressedSize, 0, nil
+	}
+
+	reader, err := r.Open(filename)
+	if err != nil {
+		return 0, 0, err
+	}
+	defer reader.Close()
+
+	hs, err := headerSizeFunction(filename)(reader)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return file.UncompressedSize, hs, nil
 }

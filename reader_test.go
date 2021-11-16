@@ -74,12 +74,13 @@ func TestNewReader(t *testing.T) {
 				sort.Strings(files)
 				assert.Equal(t, table.files, files)
 
-				_, err = r.Size("nonexistent")
+				_, _, err = r.Size("nonexistent")
 				assert.Equal(t, errFileNotFound, err)
 
-				size, err := r.Size("test.bin")
+				size, header, err := r.Size("test.bin")
 				assert.Equal(t, nil, err)
 				assert.Equal(t, uint64(20), size)
+				assert.Equal(t, uint64(0), header)
 
 				_, err = r.Checksum("nonexistent", MD5)
 				assert.Equal(t, errFileNotFound, err)
