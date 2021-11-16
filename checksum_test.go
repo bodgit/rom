@@ -42,13 +42,6 @@ func TestChecksumFunction(t *testing.T) {
 			[]byte{0x12, 0xda, 0xda, 0x1f, 0xff, 0x4d, 0x47, 0x87, 0xad, 0xe3, 0x33, 0x31, 0x47, 0x20, 0x2c, 0x3b, 0x44, 0x3e, 0x37, 0x6f},
 			nil,
 		},
-		"Unknown": {
-			"test.bin",
-			[]byte{0x01, 0x02, 0x03, 0x04},
-			Checksum(3),
-			[]byte{},
-			errUnknownChecksum,
-		},
 		"NES no header": {
 			"test.nes",
 			[]byte{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f},
@@ -75,10 +68,10 @@ func TestChecksumFunction(t *testing.T) {
 	for name, table := range tables {
 		t.Run(name, func(t *testing.T) {
 			b := bytes.NewBuffer(table.got)
-			want, err := checksumFunction(table.filename)(b, table.checksum)
+			want, err := checksumFunction(table.filename)(b)
 			assert.Equal(t, table.err, err)
 			if err == nil {
-				assert.Equal(t, table.want, want)
+				assert.Equal(t, table.want, want[table.checksum])
 			}
 		})
 	}

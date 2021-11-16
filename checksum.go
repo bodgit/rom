@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"crypto/md5"
 	"crypto/sha1"
-	"errors"
-	"hash"
 	"hash/crc32"
 	"io"
 	"path/filepath"
@@ -21,31 +19,20 @@ const (
 	SHA1
 )
 
-var errUnknownChecksum = errors.New("unknown checksum")
+func checksum(r io.Reader) ([][]byte, error) {
+	c := crc32.NewIEEE()
+	m := md5.New()
+	s := sha1.New()
 
-func checksum(r io.Reader, c Checksum) ([]byte, error) {
-	var h hash.Hash
-
-	switch c {
-	case CRC32:
-		h = crc32.NewIEEE()
-	case MD5:
-		h = md5.New()
-	case SHA1:
-		h = sha1.New()
-	default:
-		return nil, errUnknownChecksum
-	}
-
-	if _, err := io.Copy(h, r); err != nil {
+	if _, err := io.Copy(io.MultiWriter(c, m, s), r); err != nil {
 		return nil, err
 	}
 
-	return h.Sum(nil)[:], nil
+	return [][]byte{c.Sum(nil)[:], m.Sum(nil)[:], s.Sum(nil)[:]}, nil
 }
 
-var extensionToChecksum = map[string]func(io.Reader, Checksum) ([]byte, error){
-	".nes": func(r io.Reader, c Checksum) ([]byte, error) {
+var extensionToChecksum = map[string]func(io.Reader) ([][]byte, error){
+	".nes": func(r io.Reader) ([][]byte, error) {
 		b := new(bytes.Buffer)
 		if _, err := io.CopyN(b, r, 16); err != nil {
 			return nil, err
@@ -55,7 +42,7 @@ var extensionToChecksum = map[string]func(io.Reader, Checksum) ([]byte, error){
 			r = io.MultiReader(b, r)
 		}
 
-		return checksum(r, c)
+		return checksum(r)
 	},
 }
 
@@ -66,7 +53,7 @@ func needsDirectChecksum(filename string) bool {
 	return false
 }
 
-func checksumFunction(filename string) func(io.Reader, Checksum) ([]byte, error) {
+func checksumFunction(filename string) func(io.Reader) ([][]byte, error) {
 	if f, ok := extensionToChecksum[filepath.Ext(filename)]; ok {
 		return f
 	}

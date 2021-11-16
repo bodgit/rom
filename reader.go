@@ -44,9 +44,10 @@ type Validator interface {
 }
 
 var (
-	errNotFile      = errors.New("not a file")
-	errNotDirectory = errors.New("not a directory")
-	errFileNotFound = errors.New("file not found")
+	errNotFile         = errors.New("not a file")
+	errNotDirectory    = errors.New("not a directory")
+	errFileNotFound    = errors.New("file not found")
+	errUnknownChecksum = errors.New("unknown checksum")
 	// ErrNotTorrentZip is returned if a zip file does not have the
 	// correct archive comment
 	ErrNotTorrentZip = errors.New("not a torrent zip")
@@ -86,6 +87,7 @@ func NewReader(path string) (Reader, error) {
 // FileReader reads a single regular file and coerces it into looking like
 // an archive containing exactly one file
 type FileReader struct {
+	checksum  [][]byte
 	directory string
 	filename  string
 	size      uint64
@@ -115,13 +117,24 @@ func NewFileReader(filename string) (*FileReader, error) {
 
 // Checksum computes the checksum for the passed file
 func (r *FileReader) Checksum(filename string, checksum Checksum) ([]byte, error) {
-	reader, err := r.Open(filename)
-	if err != nil {
-		return nil, err
-	}
-	defer reader.Close()
+	if len(r.checksum) == 0 {
+		reader, err := r.Open(filename)
+		if err != nil {
+			return nil, err
+		}
+		defer reader.Close()
 
-	return checksumFunction(filename)(reader, checksum)
+		if r.checksum, err = checksumFunction(filename)(reader); err != nil {
+			return nil, err
+		}
+	}
+
+	switch checksum {
+	case CRC32, MD5, SHA1:
+		return r.checksum[checksum], nil
+	}
+
+	return nil, errUnknownChecksum
 }
 
 // Close closes access to the underlying file. Any other methods are not
@@ -170,6 +183,7 @@ func (r *FileReader) Size(filename string) (uint64, error) {
 // files contained within. Hidden files, directories and any files not in
 // the immediate directory are inaccessible
 type DirectoryReader struct {
+	checksums map[string][][]byte
 	directory string
 	files     map[string]uint64
 	rx        plumbing.WriteCounter
@@ -179,6 +193,7 @@ type DirectoryReader struct {
 // directory
 func NewDirectoryReader(directory string) (*DirectoryReader, error) {
 	r := &DirectoryReader{
+		checksums: make(map[string][][]byte),
 		directory: directory,
 		files:     make(map[string]uint64),
 	}
@@ -219,13 +234,26 @@ func NewDirectoryReader(directory string) (*DirectoryReader, error) {
 
 // Checksum computes the checksum for the passed file
 func (r *DirectoryReader) Checksum(filename string, checksum Checksum) ([]byte, error) {
-	reader, err := r.Open(filename)
-	if err != nil {
-		return nil, err
-	}
-	defer reader.Close()
+	c, ok := r.checksums[filename]
+	if !ok {
+		reader, err := r.Open(filename)
+		if err != nil {
+			return nil, err
+		}
+		defer reader.Close()
 
-	return checksumFunction(filename)(reader, checksum)
+		if c, err = checksumFunction(filename)(reader); err != nil {
+			return nil, err
+		}
+		r.checksums[filename] = c
+	}
+
+	switch checksum {
+	case CRC32, MD5, SHA1:
+		return c[checksum], nil
+	}
+
+	return nil, errUnknownChecksum
 }
 
 // Close closes access to the underlying file. Any other methods are not
@@ -277,16 +305,18 @@ func (r *DirectoryReader) Size(filename string) (uint64, error) {
 // contained within. Hidden files, directories and any files not in the
 // top level are inaccessible
 type ZipReader struct {
-	file   *os.File
-	reader *zip.Reader
-	files  map[string]*zip.File
-	rx     plumbing.WriteCounter
+	checksums map[string][][]byte
+	file      *os.File
+	reader    *zip.Reader
+	files     map[string]*zip.File
+	rx        plumbing.WriteCounter
 }
 
 // NewZipReader returns a new ZipReader for the passed zip archive
 func NewZipReader(filename string) (r *ZipReader, err error) {
 	r = &ZipReader{
-		files: make(map[string]*zip.File),
+		checksums: make(map[string][][]byte),
+		files:     make(map[string]*zip.File),
 	}
 
 	r.file, err = os.Open(filename)
@@ -334,13 +364,26 @@ func (r *ZipReader) Checksum(filename string, checksum Checksum) ([]byte, error)
 		return []byte{byte(0xff & (c >> 24)), byte(0xff & (c >> 16)), byte(0xff & (c >> 8)), byte(c)}, nil
 	}
 
-	reader, err := r.Open(filename)
-	if err != nil {
-		return nil, err
-	}
-	defer reader.Close()
+	c, ok := r.checksums[filename]
+	if !ok {
+		reader, err := r.Open(filename)
+		if err != nil {
+			return nil, err
+		}
+		defer reader.Close()
 
-	return checksumFunction(filename)(reader, checksum)
+		if c, err = checksumFunction(filename)(reader); err != nil {
+			return nil, err
+		}
+		r.checksums[filename] = c
+	}
+
+	switch checksum {
+	case CRC32, MD5, SHA1:
+		return c[checksum], nil
+	}
+
+	return nil, errUnknownChecksum
 }
 
 // Close closes access to the underlying file. Any other methods are not
@@ -446,16 +489,18 @@ func (r *TorrentZipReader) Valid() bool {
 // files contained within. Hidden files, directories and any files not in
 // the top level are inaccessible
 type SevenZipReader struct {
-	file   *os.File
-	reader *sevenzip.Reader
-	files  map[string]*sevenzip.File
-	rx     plumbing.WriteCounter
+	checksums map[string][][]byte
+	file      *os.File
+	reader    *sevenzip.Reader
+	files     map[string]*sevenzip.File
+	rx        plumbing.WriteCounter
 }
 
 // NewSevenZipReader returns a new SevenZipReader for the passed 7zip archive
 func NewSevenZipReader(filename string) (r *SevenZipReader, err error) {
 	r = &SevenZipReader{
-		files: make(map[string]*sevenzip.File),
+		checksums: make(map[string][][]byte),
+		files:     make(map[string]*sevenzip.File),
 	}
 
 	r.file, err = os.Open(filename)
@@ -503,13 +548,26 @@ func (r *SevenZipReader) Checksum(filename string, checksum Checksum) ([]byte, e
 		return []byte{byte(0xff & (c >> 24)), byte(0xff & (c >> 16)), byte(0xff & (c >> 8)), byte(c)}, nil
 	}
 
-	reader, err := r.Open(filename)
-	if err != nil {
-		return nil, err
-	}
-	defer reader.Close()
+	c, ok := r.checksums[filename]
+	if !ok {
+		reader, err := r.Open(filename)
+		if err != nil {
+			return nil, err
+		}
+		defer reader.Close()
 
-	return checksumFunction(filename)(reader, checksum)
+		if c, err = checksumFunction(filename)(reader); err != nil {
+			return nil, err
+		}
+		r.checksums[filename] = c
+	}
+
+	switch checksum {
+	case CRC32, MD5, SHA1:
+		return c[checksum], nil
+	}
+
+	return nil, errUnknownChecksum
 }
 
 // Close closes access to the underlying file. Any other methods are not
