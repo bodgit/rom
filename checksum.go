@@ -31,7 +31,7 @@ func checksum(r io.Reader) ([][]byte, error) {
 }
 
 var extensionToChecksum = map[string]func(io.Reader) ([][]byte, error){
-	".lnx": func(r io.Reader) ([][]byte, error) {
+	lynxExtension: func(r io.Reader) ([][]byte, error) {
 		var err error
 		if r, _, err = lynxReader(r); err != nil {
 			return nil, err
@@ -39,7 +39,7 @@ var extensionToChecksum = map[string]func(io.Reader) ([][]byte, error){
 
 		return checksum(r)
 	},
-	".nes": func(r io.Reader) ([][]byte, error) {
+	nesExtension: func(r io.Reader) ([][]byte, error) {
 		var err error
 		if r, _, err = nesReader(r); err != nil {
 			return nil, err

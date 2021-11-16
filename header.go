@@ -10,7 +10,7 @@ func headerSize(_ io.Reader) (uint64, error) {
 }
 
 var extensionToHeaderSize = map[string]func(io.Reader) (uint64, error){
-	".lnx": func(r io.Reader) (uint64, error) {
+	lynxExtension: func(r io.Reader) (uint64, error) {
 		_, hs, err := lynxReader(r)
 		if err != nil {
 			return 0, err
@@ -18,7 +18,7 @@ var extensionToHeaderSize = map[string]func(io.Reader) (uint64, error){
 
 		return hs, nil
 	},
-	".nes": func(r io.Reader) (uint64, error) {
+	nesExtension: func(r io.Reader) (uint64, error) {
 		_, hs, err := nesReader(r)
 		if err != nil {
 			return 0, err

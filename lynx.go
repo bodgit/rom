@@ -6,6 +6,7 @@ import (
 )
 
 const (
+	lynxExtension  = ".lnx"
 	lynxHeaderSize = 64
 )
 

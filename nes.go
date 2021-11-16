@@ -6,6 +6,7 @@ import (
 )
 
 const (
+	nesExtension  = ".nes"
 	nesHeaderSize = 16
 )
 
