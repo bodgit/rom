@@ -239,7 +239,7 @@ func NewDirectoryReader(directory string) (*DirectoryReader, error) {
 		if err != nil {
 			return nil, err
 		}
-		if !info.Mode().IsRegular() || name[0] == '.' {
+		if !info.Mode().IsRegular() || strings.HasPrefix(name, "._") {
 			continue
 		}
 		r.files[name] = uint64(info.Size())
@@ -374,7 +374,7 @@ func NewZipReader(filename string) (r *ZipReader, err error) {
 	}
 
 	for _, file := range r.reader.File {
-		if !file.Mode().IsRegular() || file.Name[0] == '.' || filepath.Dir(file.Name) != "." {
+		if !file.Mode().IsRegular() || strings.HasPrefix(file.Name, "._") || filepath.Dir(file.Name) != "." {
 			continue
 		}
 		r.files[file.Name] = file
@@ -574,7 +574,7 @@ func NewSevenZipReader(filename string) (r *SevenZipReader, err error) {
 	}
 
 	for _, file := range r.reader.File {
-		if !file.Mode().IsRegular() || file.Name[0] == '.' || filepath.Dir(file.Name) != "." {
+		if !file.Mode().IsRegular() || strings.HasPrefix(file.Name, "._") || filepath.Dir(file.Name) != "." {
 			continue
 		}
 		r.files[file.Name] = file

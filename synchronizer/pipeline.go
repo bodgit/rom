@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"sync"
 	"sync/atomic"
 
@@ -27,7 +28,7 @@ func (s *Synchronizer) findFiles(ctx context.Context, dir string) (<-chan string
 			}
 
 			// Ignore any hidden files or directories, otherwise we end up fighting with things like Spotlight, etc.
-			if info.Name()[0] == '.' {
+			if info.Name()[0] == '.' && (info.Mode().IsDir() || strings.HasPrefix(info.Name(), "._")) {
 				s.logger.Println("Ignoring", filepath.Join(dir, info.Name()))
 				if info.Mode().IsDir() {
 					return filepath.SkipDir
