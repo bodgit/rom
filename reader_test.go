@@ -51,6 +51,12 @@ func TestNewReader(t *testing.T) {
 			"*rom.SevenZipReader",
 			[]string{"test.bin", "test.nes"},
 		},
+		"rar": {
+			filepath.Join("testdata", "test.rar"),
+			nil,
+			"*rom.RarReader",
+			[]string{"test.bin", "test.nes"},
+		},
 		"nonexistent": {
 			filepath.Join("testdata", "error"),
 			&os.PathError{

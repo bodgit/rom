@@ -13,6 +13,7 @@ import (
 	"github.com/bodgit/plumbing"
 	"github.com/bodgit/sevenzip"
 	"github.com/gabriel-vasile/mimetype"
+	"github.com/nwaples/rardecode"
 )
 
 // Reader is the interface implemented by all ROM readers
@@ -73,6 +74,8 @@ func NewReader(path string) (Reader, error) {
 	switch mime.Extension() {
 	case ".7z":
 		return NewSevenZipReader(path)
+	case ".rar":
+		return NewRarReader(path)
 	case ".zip":
 		r, err := NewTorrentZipReader(path)
 		if err != ErrNotTorrentZip {
@@ -676,4 +679,184 @@ func (r *SevenZipReader) Size(filename string) (uint64, uint64, error) {
 	}
 
 	return file.UncompressedSize, hs, nil
+}
+
+// RarReader reads a RAR archive and provides access to any regular files
+// contained within. Hidden files, directories and any files not in the top
+// level are inaccessible. Password-protected archives are not supported
+type RarReader struct {
+	checksums map[string][][]byte
+	filename  string
+	files     map[string]uint64
+	rx        plumbing.WriteCounter
+}
+
+// BUG(bodgit): RarReader is not very I/O efficient due to the underlying implementation
+
+// NewRarReader returns a new RarReader for the passed filename
+func NewRarReader(filename string) (r *RarReader, err error) {
+	r = &RarReader{
+		checksums: make(map[string][][]byte),
+		filename:  filename,
+		files:     make(map[string]uint64),
+	}
+
+	reader, err := r.open()
+	if err != nil {
+		return nil, err
+	}
+	defer reader.Close()
+
+	for {
+		fh, err := reader.Next()
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return nil, err
+		}
+
+		if !fh.Mode().IsRegular() || strings.HasPrefix(fh.Name, "._") || filepath.Dir(fh.Name) != "." {
+			continue
+		}
+		r.files[fh.Name] = uint64(fh.UnPackedSize)
+	}
+
+	return
+}
+
+type rarReadCloser struct {
+	rardecode.Reader
+	file *os.File
+}
+
+func (r *rarReadCloser) Close() error {
+	return r.file.Close()
+}
+
+func (r *RarReader) open() (*rarReadCloser, error) {
+	file, err := os.Open(r.filename)
+	if err != nil {
+		return nil, err
+	}
+
+	reader, err := rardecode.NewReader(io.TeeReader(file, &r.rx), "")
+	if err != nil {
+		return nil, err
+	}
+
+	return &rarReadCloser{
+		*reader,
+		file,
+	}, nil
+}
+
+// Checksum computes the checksum for the passed file, it will not include any header that might be present
+func (r *RarReader) Checksum(filename string, checksum Checksum) ([]byte, error) {
+	c, ok := r.checksums[filename]
+	if !ok {
+		reader, err := r.Open(filename)
+		if err != nil {
+			return nil, err
+		}
+		defer reader.Close()
+
+		if c, err = checksumFunction(filename)(reader); err != nil {
+			return nil, err
+		}
+		r.checksums[filename] = c
+	}
+
+	switch checksum {
+	case CRC32, MD5, SHA1:
+		return c[checksum], nil
+	}
+
+	return nil, errUnknownChecksum
+}
+
+// Close closes access to the underlying file. Any other methods are not
+// guaranteed to work after this has been called
+func (r *RarReader) Close() error {
+	return nil
+}
+
+// Files returns all files accessible by the implementation.
+func (r *RarReader) Files() []string {
+	files := []string{}
+	for f := range r.files {
+		files = append(files, f)
+	}
+	return files
+}
+
+// Name returns the full path to the underlying file
+func (r *RarReader) Name() string {
+	return r.filename
+}
+
+// Open returns an io.ReadCloser for any file listed by the Files method
+func (r *RarReader) Open(filename string) (rc io.ReadCloser, err error) {
+	if _, ok := r.files[filename]; !ok {
+		return nil, errFileNotFound
+	}
+
+	var reader *rarReadCloser
+	reader, err = r.open()
+	if err != nil {
+		return
+	}
+	defer func() {
+		if err != nil {
+			reader.Close()
+		}
+	}()
+
+	for {
+		var fh *rardecode.FileHeader
+		fh, err = reader.Next()
+		if err != nil {
+			if err == io.EOF {
+				err = errFileNotFound
+			}
+			break
+		}
+
+		if fh.Name == filename {
+			rc = reader
+			break
+		}
+	}
+
+	return
+}
+
+// Rx returns the number of bytes read by the implementation
+func (r *RarReader) Rx() uint64 {
+	return r.rx.Count()
+}
+
+// Size returns the size of any file listed by the Files method and the size of any header that is present
+func (r *RarReader) Size(filename string) (uint64, uint64, error) {
+	size, ok := r.files[filename]
+	if !ok {
+		return 0, 0, errFileNotFound
+	}
+
+	if !hasHeader(filename) {
+		return size, 0, nil
+	}
+
+	reader, err := r.Open(filename)
+	if err != nil {
+		return 0, 0, err
+	}
+	defer reader.Close()
+
+	hs, err := headerSizeFunction(filename)(reader)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return size, hs, nil
 }
