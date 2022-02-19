@@ -217,7 +217,7 @@ func (s *Synchronizer) Delete(dir string, datfile *dat.File) error {
 	}
 
 	for _, file := range files {
-		if _, ok := games[file]; file[0] == '.' || ok {
+		if _, ok := games[file]; ok || file[0] == '.' {
 			continue
 		}
 		s.logger.Println("Deleting", file)
