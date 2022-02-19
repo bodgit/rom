@@ -111,6 +111,11 @@ func (s *Synchronizer) allGames(ctx context.Context, datfile *dat.File) (<-chan 
 		defer close(out)
 		defer close(errc)
 		for _, game := range datfile.Game {
+			if _, ok := s.missing[game.Name]; ok {
+				s.logger.Println("Skipping", game.Name)
+				game.Matched()
+				continue
+			}
 			select {
 			case out <- game:
 			case <-ctx.Done():

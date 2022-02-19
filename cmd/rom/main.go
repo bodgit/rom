@@ -76,6 +76,18 @@ func sync(c *cli.Context) error {
 		log.Fatal(err)
 	}
 
+	if c.Path("mia") != "" {
+		f, err := os.Open(c.Path("mia"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Close()
+
+		if err = s.SetMissing(f); err != nil {
+			log.Fatal(err)
+		}
+	}
+
 	start := time.Now()
 	db, err := s.Scan(c.Args().Slice()...)
 	if err != nil {
@@ -166,6 +178,11 @@ func main() {
 						Default: "crc32",
 					},
 					Usage: "checksum algorithm to use. (" + strings.Join(checksums, ", ") + ")",
+				},
+				&cli.PathFlag{
+					Name:    "mia",
+					Aliases: []string{"m"},
+					Usage:   "path to file containing list of games to ignore",
 				},
 			},
 		},

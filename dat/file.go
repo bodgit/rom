@@ -136,6 +136,14 @@ type Game struct {
 	ROM         []ROM    `xml:"rom"`
 }
 
+// Matched marks Game g as found in some external repository. By doing this
+// it will not be marshalled back into XML
+func (g *Game) Matched() {
+	for i := range g.ROM {
+		g.ROM[i].Matched()
+	}
+}
+
 func (g *Game) isComplete() bool {
 	complete := 0
 	for _, r := range g.ROM {

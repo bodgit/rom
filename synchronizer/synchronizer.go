@@ -5,7 +5,9 @@ directory of TorrentZip files representing the games in a dat file.
 package synchronizer
 
 import (
+	"bufio"
 	"context"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -26,6 +28,7 @@ type Synchronizer struct {
 	logger   *log.Logger
 	rx       uint64
 	tx       uint64
+	missing  map[string]struct{}
 }
 
 // NewSynchronizer returns a new Synchronizer configured with any optional
@@ -101,6 +104,21 @@ func Checksum(c rom.Checksum) func(*Synchronizer) error {
 // SetChecksum configures the checksum algorithm used by s
 func (s *Synchronizer) SetChecksum(c rom.Checksum) error {
 	return s.setOption(Checksum(c))
+}
+
+func Missing(r io.Reader) func(*Synchronizer) error {
+	return func(s *Synchronizer) error {
+		scanner := bufio.NewScanner(r)
+		s.missing = make(map[string]struct{})
+		for scanner.Scan() {
+			s.missing[scanner.Text()] = struct{}{}
+		}
+		return scanner.Err()
+	}
+}
+
+func (s *Synchronizer) SetMissing(r io.Reader) error {
+	return s.setOption(Missing(r))
 }
 
 // Scan reads one or more directories and any archives within and stores the
