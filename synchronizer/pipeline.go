@@ -208,11 +208,8 @@ func (s *Synchronizer) transfer(writer rom.Writer, game dat.Game, sources map[st
 
 		s.logger.Println("Copying", src.File, "from", reader.Name(), "to", writer.Name(), "as", r.Name)
 
-		if n, err := io.Copy(rw, rr); err != nil || n != int64(r.Size) {
-			if err != nil {
-				return err
-			}
-			return errors.New("wrong number of bytes")
+		if _, err = io.Copy(rw, rr); err != nil {
+			return err
 		}
 
 		rw.Close()
