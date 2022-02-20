@@ -9,7 +9,7 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.0
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/nwaples/rardecode v1.1.2
-	github.com/olekukonko/tablewriter v0.0.4
+	github.com/olekukonko/tablewriter v0.0.5
 	github.com/stretchr/testify v1.7.0
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/uwedeportivo/torrentzip v1.0.0
