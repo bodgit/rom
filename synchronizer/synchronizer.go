@@ -106,6 +106,7 @@ func (s *Synchronizer) SetChecksum(c rom.Checksum) error {
 	return s.setOption(Checksum(c))
 }
 
+// Missing reads from r a list of missing games
 func Missing(r io.Reader) func(*Synchronizer) error {
 	return func(s *Synchronizer) error {
 		scanner := bufio.NewScanner(r)
@@ -117,6 +118,7 @@ func Missing(r io.Reader) func(*Synchronizer) error {
 	}
 }
 
+// SetMissing reads from r a list of missing games
 func (s *Synchronizer) SetMissing(r io.Reader) error {
 	return s.setOption(Missing(r))
 }
