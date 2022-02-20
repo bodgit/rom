@@ -8,12 +8,14 @@ import (
 	"os"
 	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/bodgit/rom"
 	"github.com/bodgit/rom/dat"
 	"github.com/bodgit/rom/synchronizer"
+	"github.com/olekukonko/tablewriter"
 	"github.com/urfave/cli/v2"
 )
 
@@ -133,6 +135,67 @@ func sync(c *cli.Context) error {
 	return nil
 }
 
+func info(c *cli.Context) error {
+	if c.NArg() < 1 {
+		cli.ShowCommandHelpAndExit(c, c.Command.FullName(), 1)
+	}
+
+	for i, r := range c.Args().Slice() {
+		reader, err := rom.NewReader(r)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if i > 0 {
+			fmt.Println()
+		}
+
+		fmt.Println(r)
+		fmt.Println()
+
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetBorder(false)
+		table.SetCenterSeparator("")
+		table.SetColumnSeparator("")
+		table.SetAutoWrapText(false)
+
+		table.SetHeader([]string{"ROM", "Size", "Header", "CRC32", "MD5", "SHA1"})
+
+		files := reader.Files()
+		sort.Strings(files)
+
+		for _, f := range files {
+			size, header, err := reader.Size(f)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			c, err := reader.Checksum(f, rom.CRC32)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			m, err := reader.Checksum(f, rom.MD5)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			s, err := reader.Checksum(f, rom.SHA1)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			table.Append([]string{f, strconv.FormatUint(size-header, 10), strconv.FormatUint(header, 10), fmt.Sprintf("%x", c), fmt.Sprintf("%x", m), fmt.Sprintf("%x", s)})
+		}
+
+		table.Render()
+
+		reader.Close()
+	}
+
+	return nil
+}
+
 func main() {
 	app := cli.NewApp()
 
@@ -147,6 +210,13 @@ func main() {
 	sort.Sort(sort.StringSlice(checksums))
 
 	app.Commands = []*cli.Command{
+		{
+			Name:        "info",
+			Usage:       "ROM information",
+			Description: "",
+			Action:      info,
+			ArgsUsage:   "",
+		},
 		{
 			Name:        "sync",
 			Usage:       "Synchronise ROMs",
