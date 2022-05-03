@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/bodgit/plumbing v1.1.1
-	github.com/bodgit/sevenzip v1.1.1
+	github.com/bodgit/sevenzip v1.2.0
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.0
 	github.com/hashicorp/errwrap v1.1.0 // indirect
