@@ -20,8 +20,8 @@ github.com/BurntSushi/toml v1.1.0/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbi
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/bodgit/plumbing v1.1.1 h1:hal80/Hq4plOwyT28F6t0W786L2PaNFnjep2M6keTfM=
 github.com/bodgit/plumbing v1.1.1/go.mod h1:b9TeRi7Hvc6Y05rjm8VML3+47n4XTZPtQ/5ghqic2n8=
-github.com/bodgit/sevenzip v1.2.0 h1:990H4tAee7e2seogLvLvk/uQxcnFl+Po68hKLLVT1Ok=
-github.com/bodgit/sevenzip v1.2.0/go.mod h1:X2mX40j+KoSqmCG7HyssnFrNsK5KfMNGjpNuJtkhz8I=
+github.com/bodgit/sevenzip v1.2.1 h1:9wrkVMOTK8ifHfUmC2VTr5sMI4WfKJLKYsFG/HgpiQY=
+github.com/bodgit/sevenzip v1.2.1/go.mod h1:X2mX40j+KoSqmCG7HyssnFrNsK5KfMNGjpNuJtkhz8I=
 github.com/bodgit/windows v1.0.0 h1:rLQ/XjsleZvx4fR1tB/UxQrK+SJ2OFHzfPjLWWOhDIA=
 github.com/bodgit/windows v1.0.0/go.mod h1:a6JLwrB4KrTR5hBpp8FI9/9W9jJfeQ2h4XDXU74ZCdM=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
