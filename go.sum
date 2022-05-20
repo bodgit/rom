@@ -20,6 +20,8 @@ github.com/BurntSushi/toml v1.1.0/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbi
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/andybalholm/brotli v1.0.4 h1:V7DdXeJtZscaqfNuAdSRuRFzuiKlHSC/Zh3zl9qY3JY=
 github.com/andybalholm/brotli v1.0.4/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
+github.com/antzucaro/matchr v0.0.0-20210222213004-b04723ef80f0 h1:R/qAiUxFT3mNgQaNqJe0IVznjKRNm23ohAIh9lgtlzc=
+github.com/antzucaro/matchr v0.0.0-20210222213004-b04723ef80f0/go.mod h1:v3ZDlfVAL1OrkKHbGSFFK60k0/7hruHPDq2XMs9Gu6U=
 github.com/bodgit/plumbing v1.2.0 h1:gg4haxoKphLjml+tgnecR4yLBV5zo4HAZGCtAh3xCzM=
 github.com/bodgit/plumbing v1.2.0/go.mod h1:b9TeRi7Hvc6Y05rjm8VML3+47n4XTZPtQ/5ghqic2n8=
 github.com/bodgit/sevenzip v1.2.2 h1:oVstkjbJ/bRfmxPIFtaf0Fzf6XhXrXiglQU/WLfWHJk=
@@ -110,8 +112,8 @@ github.com/stretchr/testify v1.7.1 h1:5TQK59W5E3v0r2duFAb7P95B6hEeOyEnHRa8MjYSMT
 github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/ulikunitz/xz v0.5.10 h1:t92gobL9l3HE202wg3rlk19F6X+JOxl9BBrCCMYEYd8=
 github.com/ulikunitz/xz v0.5.10/go.mod h1:nbz6k7qbPmH4IRqmfOplQw/tblSgqTqBwxkY0oWt/14=
-github.com/urfave/cli/v2 v2.6.0 h1:yj2Drkflh8X/zUrkWlWlUjZYHyWN7WMmpVxyxXIUyv8=
-github.com/urfave/cli/v2 v2.6.0/go.mod h1:oDzoM7pVwz6wHn5ogWgFUU1s4VJayeQS+aEZDqXIEJs=
+github.com/urfave/cli/v2 v2.7.1 h1:DsAOFeI9T0vmUW4LiGR5mhuCIn5kqGIE4WMU2ytmH00=
+github.com/urfave/cli/v2 v2.7.1/go.mod h1:TYFbtzt/azQoJOrGH5mDfZtS0jIkl/OeFwlRWPR9KRM=
 github.com/uwedeportivo/torrentzip v1.0.0 h1:zj1hEqWb4x3OyKBalwnP0d45H8oaSbo/iNf7Cka2BoU=
 github.com/uwedeportivo/torrentzip v1.0.0/go.mod h1:PhiUYrV9vTPb6cFslnpRPWEsQzvQ60YNUJuglCYDUGo=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
