@@ -3,7 +3,7 @@ module github.com/bodgit/rom
 go 1.13
 
 require (
-	github.com/bodgit/plumbing v1.2.0
+	github.com/bodgit/plumbing v1.3.0
 	github.com/bodgit/sevenzip v1.3.0
 	github.com/gabriel-vasile/mimetype v1.4.1
 	github.com/hashicorp/errwrap v1.1.0 // indirect
