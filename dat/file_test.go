@@ -3,12 +3,12 @@ package dat
 import (
 	"encoding/xml"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 )
 
 func ExampleUnmarshal() {
-	b, err := ioutil.ReadFile(filepath.Join("testdata", "NEC - PC Engine SuperGrafx (20191008-080644).dat"))
+	b, err := os.ReadFile(filepath.Join("testdata", "NEC - PC Engine SuperGrafx (20191008-080644).dat"))
 	if err != nil {
 		panic(err)
 	}

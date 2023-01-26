@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -346,7 +345,7 @@ rom:
 		return nil
 	}
 
-	temp, err := ioutil.TempDir(dir, "")
+	temp, err := os.MkdirTemp(dir, "")
 	if err != nil {
 		return err
 	}

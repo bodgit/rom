@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/xml"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"runtime"
@@ -68,7 +68,7 @@ func sync(c *cli.Context) error {
 		cli.ShowCommandHelpAndExit(c, c.Command.FullName(), 1)
 	}
 
-	logger := log.New(ioutil.Discard, "", 0)
+	logger := log.New(io.Discard, "", 0)
 	if c.Bool("verbose") {
 		logger.SetOutput(os.Stderr)
 	}
@@ -101,7 +101,7 @@ func sync(c *cli.Context) error {
 
 	s.Reset()
 
-	b, err := ioutil.ReadAll(os.Stdin)
+	b, err := os.ReadAll(os.Stdin)
 	if err != nil {
 		log.Fatal(err)
 	}

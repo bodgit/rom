@@ -14,14 +14,13 @@ An example:
 
         import (
                 "encoding/xml"
-                "io/ioutil"
                 "os"
 
                 "github.com/bodgit/rom/dat"
         )
 
         func main() {
-                b, err := ioutil.ReadFile(os.Args[1])
+                b, err := os.ReadFile(os.Args[1])
                 if err != nil {
                         panic(err)
                 }
