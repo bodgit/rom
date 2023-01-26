@@ -119,7 +119,9 @@ func sync(c *cli.Context) error {
 
 	logger.Println("Read", s.Rx(), "bytes and wrote", s.Tx(), "bytes in", elapsed)
 
-	s.Delete(c.Args().First(), datfile)
+	if err = s.Delete(c.Args().First(), datfile); err != nil {
+		log.Fatal(err)
+	}
 
 	if b, err = xml.MarshalIndent(datfile, "", "\t"); err != nil {
 		log.Fatal(err)
@@ -207,7 +209,7 @@ func main() {
 	for k := range stringToChecksum {
 		checksums = append(checksums, k)
 	}
-	sort.Sort(sort.StringSlice(checksums))
+	sort.Strings(checksums)
 
 	app.Commands = []*cli.Command{
 		{

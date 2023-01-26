@@ -93,13 +93,13 @@ func (f *File) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	}
 
 	// Need to override this
-	start = xml.StartElement{Name: xml.Name{"", "datafile"}}
+	start = xml.StartElement{Name: xml.Name{Local: "datafile"}}
 
 	if err := e.EncodeToken(start); err != nil {
 		return err
 	}
 
-	if err := e.EncodeElement(f.Header, xml.StartElement{Name: xml.Name{"", "header"}}); err != nil {
+	if err := e.EncodeElement(f.Header, xml.StartElement{Name: xml.Name{Local: "header"}}); err != nil {
 		return err
 	}
 
@@ -107,7 +107,7 @@ func (f *File) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 		if g.isComplete() {
 			continue
 		}
-		if err := e.EncodeElement(g, xml.StartElement{Name: xml.Name{"", "game"}}); err != nil {
+		if err := e.EncodeElement(g, xml.StartElement{Name: xml.Name{Local: "game"}}); err != nil {
 			return err
 		}
 	}
@@ -196,23 +196,23 @@ func (r *ROM) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 
 	start.Attr = []xml.Attr{
 		{
-			Name:  xml.Name{"", "name"},
+			Name:  xml.Name{Local: "name"},
 			Value: r.Name,
 		},
 		{
-			Name:  xml.Name{"", "size"},
+			Name:  xml.Name{Local: "size"},
 			Value: strconv.FormatUint(r.Size, 10),
 		},
 		{
-			Name:  xml.Name{"", "crc"},
+			Name:  xml.Name{Local: "crc"},
 			Value: r.CRC32,
 		},
 		{
-			Name:  xml.Name{"", "md5"},
+			Name:  xml.Name{Local: "md5"},
 			Value: r.MD5,
 		},
 		{
-			Name:  xml.Name{"", "sha1"},
+			Name:  xml.Name{Local: "sha1"},
 			Value: r.SHA1,
 		},
 	}

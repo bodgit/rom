@@ -21,7 +21,7 @@ func nesReader(r io.Reader) (io.Reader, uint64, error) {
 		return nil, 0, err
 	}
 
-	if bytes.Compare(b.Bytes()[0:4], []byte{'N', 'E', 'S', 0x1a}) != 0 {
+	if !bytes.Equal(b.Bytes()[0:4], []byte{'N', 'E', 'S', 0x1a}) {
 		return io.MultiReader(b, r), 0, nil
 	}
 

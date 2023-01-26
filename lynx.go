@@ -20,7 +20,7 @@ func lynxReader(r io.Reader) (io.Reader, uint64, error) {
 		return nil, 0, err
 	}
 
-	if bytes.Compare(b.Bytes()[0:4], []byte{'L', 'Y', 'N', 'X'}) != 0 {
+	if !bytes.Equal(b.Bytes()[0:4], []byte{'L', 'Y', 'N', 'X'}) {
 		return io.MultiReader(b, r), 0, nil
 	}
 

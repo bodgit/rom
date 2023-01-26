@@ -60,9 +60,9 @@ func TestNewReader(t *testing.T) {
 		"nonexistent": {
 			filepath.Join("testdata", "error"),
 			&os.PathError{
-				"stat",
-				filepath.Join("testdata", "error"),
-				syscall.ENOENT,
+				Op:   "stat",
+				Path: filepath.Join("testdata", "error"),
+				Err:  syscall.ENOENT,
 			},
 			"",
 			[]string{},

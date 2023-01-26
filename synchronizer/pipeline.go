@@ -78,27 +78,33 @@ func (s *Synchronizer) mergeFiles(ctx context.Context, in ...<-chan string) (<-c
 	return out, errc, nil
 }
 
+func (s *Synchronizer) scanROM(db *DB, file string) error {
+	reader, err := rom.NewReader(file)
+	if err != nil {
+		return err
+	}
+	defer reader.Close()
+
+	s.logger.Println("Scanning", reader.Name())
+
+	if err = db.scan(reader, s.checksum); err != nil {
+		return err
+	}
+
+	atomic.AddUint64(&s.rx, reader.Rx())
+
+	return nil
+}
+
 func (s *Synchronizer) scanFiles(ctx context.Context, db *DB, in <-chan string) (<-chan error, error) {
 	errc := make(chan error, 1)
 	go func() {
 		defer close(errc)
 		for file := range in {
-			reader, err := rom.NewReader(file)
-			if err != nil {
+			if err := s.scanROM(db, file); err != nil {
 				errc <- err
 				return
 			}
-			defer reader.Close()
-
-			s.logger.Println("Scanning", reader.Name())
-
-			if err = db.scan(reader, s.checksum); err != nil {
-				errc <- err
-				return
-			}
-
-			reader.Close()
-			atomic.AddUint64(&s.rx, reader.Rx())
 		}
 	}()
 	return errc, nil
@@ -231,7 +237,7 @@ func (s *Synchronizer) create(game dat.Game, dir string, db *DB) error {
 	sources := make(map[string][]source, len(game.ROM))
 
 	for _, r := range game.ROM {
-		if s := db.find(romChecksum(r, s.checksum)); s != nil && len(s) > 0 {
+		if s := db.find(romChecksum(r, s.checksum)); len(s) > 0 {
 			sources[r.Name] = s
 		}
 	}
@@ -303,7 +309,7 @@ func (s *Synchronizer) modify(game dat.Game, dir string, db *DB) error {
 
 rom:
 	for _, r := range game.ROM {
-		if srcs := db.find(romChecksum(r, s.checksum)); srcs != nil && len(srcs) > 0 {
+		if srcs := db.find(romChecksum(r, s.checksum)); len(srcs) > 0 {
 			for _, src := range srcs {
 				if src.Name == reader.Name() && src.File == r.Name {
 					sources[r.Name] = []source{{reader.Name(), r.Name}}
