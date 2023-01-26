@@ -101,7 +101,7 @@ func sync(c *cli.Context) error {
 
 	s.Reset()
 
-	b, err := os.ReadAll(os.Stdin)
+	b, err := io.ReadAll(os.Stdin)
 	if err != nil {
 		log.Fatal(err)
 	}
