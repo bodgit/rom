@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/bodgit/plumbing v1.3.0
 	github.com/bodgit/sevenzip v1.4.3
-	github.com/gabriel-vasile/mimetype v1.4.2
+	github.com/gabriel-vasile/mimetype v1.4.3
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/nwaples/rardecode v1.1.3
 	github.com/olekukonko/tablewriter v0.0.5
@@ -28,7 +28,7 @@ require (
 	github.com/ulikunitz/xz v0.5.11 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go4.org v0.0.0-20201209231011-d4a079459e60 // indirect
-	golang.org/x/net v0.8.0 // indirect
-	golang.org/x/text v0.10.0 // indirect
+	golang.org/x/net v0.17.0 // indirect
+	golang.org/x/text v0.13.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
